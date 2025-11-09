@@ -1,4 +1,4 @@
-# KAIM-Week-0: Solar Challenge - Environment Setup
+# KAIM-Week-0: Solar Challenge
 
 # Task 1: Git & Environment Setup Overview
 
@@ -40,5 +40,5 @@ pip install -r requirements.txt
 ```
 4. CI Workflow
 
-A GitHub Actions workflow is set up in .github/workflows/ci.yml to automatically run pip install -r requirements.txt and verify the Python version on every push and pull request.
+A GitHub Actions workflow is set up in .github/workflows/ci.yml to automatically run ```pip install -r requirements.txt``` and verify the Python version on every push and pull request.
 
