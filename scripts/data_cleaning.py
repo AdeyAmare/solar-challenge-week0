@@ -7,6 +7,13 @@ import os
 def load_data(file_path):
     try:
         df = pd.read_csv(file_path)
+        
+        # --- TIMESTAMP CONVERSION ADDED HERE ---
+        if 'Timestamp' in df.columns:
+            df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+            print("✅ 'Timestamp' column successfully converted to datetime objects.")
+        # ---------------------------------------
+            
         return df
     except FileNotFoundError:
         print(f"!!! ERROR: The file '{file_path}' was not found.")
