@@ -5,3 +5,8 @@ data/
 
 # Virtual environment
 .venv/
+
+__pycache__/
+*.pyc
+*.pyd
+*.pyo

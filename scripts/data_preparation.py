@@ -2,10 +2,11 @@ import pandas as pd
 import numpy as np 
 import os
 
+
 # --- 2. Function to Load Data ---
 def load_data(file_path):
     try:
-        df = pd.read_csv(file_path, parse_dates=['Timestamp'])
+        df = pd.read_csv(file_path)
         return df
     except FileNotFoundError:
         print(f"!!! ERROR: The file '{file_path}' was not found.")
@@ -37,24 +38,22 @@ def get_summary_report(df):
 
 # --- 4. Function for Z-Score Outlier Detection ---
 def calculate_zscore_and_flag_outliers(df):
-    REQUIRED_COLS = ['GHI', 'DNI', 'DHI', 'ModA', 'ModB', 'WS', 'WSgust']
     
-    # Select only the required columns that exist
-    cols_for_zscore = [col for col in REQUIRED_COLS if col in df.columns]
-    df_for_zscore = df[cols_for_zscore].copy()
+    # Columns to check
+    numeric_cols = ['GHI', 'DNI', 'DHI', 'ModA', 'ModB', 'WS', 'WSgust']
+    numeric_cols = [col for col in numeric_cols if col in df.columns]  # only existing columns
     
-    if df_for_zscore.empty:
-        df['Outliers_Flag'] = False
-        return df
-
-    # Calculate Z-scores: (Value - Mean) / Standard Deviation
+    # Copy relevant numeric data
+    df_for_zscore = df[numeric_cols].copy()
+    
+    # Calculate Z-scores
     df_zscores = (df_for_zscore - df_for_zscore.mean()) / df_for_zscore.std()
     
     # Flag rows with |Z| > 3
-    outliers = df_zscores.abs() > 3
-    df['Outliers_Flag'] = outliers.any(axis=1)
+    df['Outliers_Flag'] = df_zscores.abs().gt(3).any(axis=1)
     
     return df
+
 
 # --- 5. Function to Clean Outliers and Missing Values ---
 def clean_and_impute(df, impute_columns):
