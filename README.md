@@ -42,3 +42,27 @@ pip install -r requirements.txt
 
 A GitHub Actions workflow is set up in .github/workflows/ci.yml to automatically run ```pip install -r requirements.txt``` and verify the Python version on every push and pull request.
 
+# Task 2: Solar Data Analysis
+
+This task covers preparing, cleaning, and analyzing solar datasets for multiple countries using reusable scripts.
+
+## Key Steps
+
+## Data Preparation: 
+Load raw data, inspect missing values, detect outliers, clean/impute anomalies, and save cleaned datasets.
+
+## Data Analysis:
+Time series plots for GHI, DNI, DHI, and temperature.
+Cleaning impact plots for sensor readings.
+Correlation heatmaps and scatter plots for variable relationships.
+Wind and distribution analysis with histograms and wind rose plots.
+Bubble charts showing GHI vs. temperature with relative humidity as bubble size.
+
+Note: All steps use modular scripts in the scripts folder, making the workflow reusable for different datasets.
+
+## Running Task 2
+
+Ensure dependencies are installed as per Task 1.
+Run the notebooks for each country to execute the full preparation and analysis workflow using the scripts.
+Users should have a data/ folder in the project root containing the raw CSVs, or check the notebook code for the expected folder structure.
+
