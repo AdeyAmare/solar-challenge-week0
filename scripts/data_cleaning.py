@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 
-# --- 2. Function to Load Data ---
+# --- Function to Load Data ---
 def load_data(file_path):
     try:
         df = pd.read_csv(file_path)
@@ -22,7 +22,7 @@ def load_data(file_path):
         print(f"An unexpected error occurred during loading: {e}")
         return None
 
-# --- 3. Function for Summary and Missing Values ---
+# --- Function for Summary and Missing Values ---
 def get_summary_report(df):
     """Prints required summary statistics and missing value reports."""
     print("\n--- 1. Summary Statistics ---")
@@ -43,47 +43,56 @@ def get_summary_report(df):
     else:
         print(high_null_cols)
 
-# --- 4. Function for Z-Score Outlier Detection ---
+# --- Function for Z-Score Outlier Detection ---
 def calculate_zscore_and_flag_outliers(df):
-    
-    # Columns to check
+    """
+    Flags rows as outliers if any of the key numeric columns
+    (GHI, DNI, DHI, ModA, ModB, WS, WSgust) have |Z| > 3.
+    """
     numeric_cols = ['GHI', 'DNI', 'DHI', 'ModA', 'ModB', 'WS', 'WSgust']
-    numeric_cols = [col for col in numeric_cols if col in df.columns]  # only existing columns
+    numeric_cols = [col for col in numeric_cols if col in df.columns]
+
+    print("🔹 Calculating Z-scores and flagging outliers for the following columns:")
+    print(f"   {numeric_cols}")
+
+    # Compute Z-scores
+    zscores = (df[numeric_cols] - df[numeric_cols].mean()) / df[numeric_cols].std()
+
+    # Flag rows where any Z-score exceeds 3
+    df['Outliers_Flag'] = zscores.abs().gt(3).any(axis=1)
     
-    # Copy relevant numeric data
-    df_for_zscore = df[numeric_cols].copy()
-    
-    # Calculate Z-scores
-    df_zscores = (df_for_zscore - df_for_zscore.mean()) / df_for_zscore.std()
-    
-    # Flag rows with |Z| > 3
-    df['Outliers_Flag'] = df_zscores.abs().gt(3).any(axis=1)
-    
+    print(f"✅ Outliers flagged in {df['Outliers_Flag'].sum()} rows.")
     return df
 
 
-# --- 5. Function to Clean Outliers and Missing Values ---
+# --- Function to Clean Outliers and Impute Missing Values ---
 def clean_and_impute(df, impute_columns):
-    """Cleans data by replacing flagged outliers and remaining NaNs with the median."""
-    
-    # Step 5a: Replace Flagged Outliers with Median
+    """
+    Cleans data by:
+    1. Replacing flagged outliers with the median (median calculated without the outliers themselves).
+    2. Imputing remaining missing values in key columns with the median.
+    """
     if 'Outliers_Flag' in df.columns and df['Outliers_Flag'].any():
         outlier_mask = df['Outliers_Flag']
-        
+        print("🔹 Replacing outliers with median for the following columns:")
+        print(f"   {impute_columns}")
         for col in impute_columns:
             if col in df.columns:
-                median_val = df[col].median()
+                median_val = df.loc[~outlier_mask, col].median(skipna=True)
                 df.loc[outlier_mask, col] = median_val
 
-    # Step 5b: Impute Remaining Missing Values with Median
+    # Impute any remaining missing values
+    print("🔹 Imputing remaining missing values with median for key columns.")
     for col in impute_columns:
         if col in df.columns:
-            median_value = df[col].median(skipna=True)
-            df[col].fillna(median_value, inplace=True)
-            
+            median_val = df[col].median(skipna=True)
+            df[col].fillna(median_val, inplace=True)
+
+    print("✅ Outliers replaced and missing values imputed.")
     return df
 
-# --- 6. Function to Save Cleaned Data ---
+
+# --- Function to Save Cleaned Data ---
 def save_cleaned_data(df, output_path):
     """Exports the cleaned DataFrame to a new CSV file."""
     output_dir = os.path.dirname(output_path)
