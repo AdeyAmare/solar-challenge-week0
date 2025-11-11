@@ -48,6 +48,7 @@ def calculate_zscore_and_flag_outliers(df):
     """
     Flags rows as outliers if any of the key numeric columns
     (GHI, DNI, DHI, ModA, ModB, WS, WSgust) have |Z| > 3.
+    Also prints the individual counts for ModA and ModB outliers.
     """
     numeric_cols = ['GHI', 'DNI', 'DHI', 'ModA', 'ModB', 'WS', 'WSgust']
     numeric_cols = [col for col in numeric_cols if col in df.columns]
@@ -61,9 +62,18 @@ def calculate_zscore_and_flag_outliers(df):
     # Flag rows where any Z-score exceeds 3
     df['Outliers_Flag'] = zscores.abs().gt(3).any(axis=1)
     
-    print(f"✅ Outliers flagged in {df['Outliers_Flag'].sum()} rows.")
+    if 'ModA' in zscores.columns:
+        mod_a_outlier_count = zscores['ModA'].abs().gt(3).sum()
+        print(f"\n📈 ModA Specific Outliers (|Z| > 3): {mod_a_outlier_count}")
+    
+    if 'ModB' in zscores.columns:
+        mod_b_outlier_count = zscores['ModB'].abs().gt(3).sum()
+        print(f"📉 ModB Specific Outliers (|Z| > 3): {mod_b_outlier_count}")
+        
+    # ----------------------------------------------
+    
+    print(f"\n✅ Total rows flagged (at least one column |Z| > 3): {df['Outliers_Flag'].sum()}")
     return df
-
 
 # --- Function to Clean Outliers and Impute Missing Values ---
 def clean_and_impute(df, impute_columns):
@@ -72,6 +82,9 @@ def clean_and_impute(df, impute_columns):
     1. Replacing flagged outliers with the median (median calculated without the outliers themselves).
     2. Imputing remaining missing values in key columns with the median.
     """
+
+    df = df.copy()
+    
     if 'Outliers_Flag' in df.columns and df['Outliers_Flag'].any():
         outlier_mask = df['Outliers_Flag']
         print("🔹 Replacing outliers with median for the following columns:")
@@ -108,3 +121,5 @@ def save_cleaned_data(df, output_path):
         print(f"\n✅ Cleaned Data Saved successfully to: {output_path}")
     except Exception as e:
         print(f"!!! ERROR: Could not save file. {e}")
+
+
