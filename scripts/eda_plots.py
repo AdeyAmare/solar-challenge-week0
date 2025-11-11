@@ -1,15 +1,15 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
+import numpy as np 
 import os
 
-# The 'windrose' library is required for the wind rose plot.
-# You may need to install it first (e.g., using 'pip install windrose')
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from windrose import WindroseAxes
 
 # Set standard styles for plots
 sns.set_style("whitegrid")
+
 
 # --- 1. Utility Function to Load Cleaned Data ---
 def load_cleaned_data(file_path):
@@ -34,61 +34,102 @@ def load_cleaned_data(file_path):
         return None
 
 # --- 2. Time Series Analysis (REQUIRED) ---
+import pandas as pd
+import matplotlib.pyplot as plt
+
 def plot_time_series(df):
     """
-    Plots GHI, DNI, DHI, and Tamb against the Timestamp.
-    Resamples to daily averages for a clearer, high-level view.
+    Plots GHI, DNI, DHI, and Tamb against Timestamp using the original time resolution.
+    This allows observation of patterns by month, trends throughout the day, 
+    and detailed anomalies like solar peaks or rapid temperature fluctuations.
     """
-    print("\n--- Plotting Time Series Analysis (Daily Averages) ---")
-    
-    # Ensure Timestamp is the index for resampling
+    # Requirement: Check for Timestamp column
     if 'Timestamp' not in df.columns:
-        print("!!! ERROR: 'Timestamp' column missing for time series analysis.")
+        print("!!! ERROR: 'Timestamp' column missing.")
         return
-        
+    
+    # Ensure Timestamp is datetime for proper indexing/plotting
+    try:
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+    except Exception as e:
+        print(f"Error converting Timestamp to datetime: {e}")
+        return
+
+    # Set Timestamp as index for time series analysis
     df_ts = df.set_index('Timestamp')
     
-    # Resample to Daily ('D') averages to make the plot readable
-    # For a more detailed plot, you could use 'H' (hourly) or plot a small slice
-    try:
-        df_daily = df_ts.resample('D').mean(numeric_only=True)
-    except Exception as e:
-        print(f"Error during resampling: {e}")
+    # Requirement: Only plot available columns (GHI, DNI, DHI, Tamb)
+    # Use the raw indexed DataFrame (df_ts) for column checking
+    cols_to_plot = [c for c in ['GHI', 'DNI', 'DHI', 'Tamb'] if c in df_ts.columns]
+    if not cols_to_plot:
+        print("!!! ERROR: None of GHI, DNI, DHI, Tamb are available.")
         return
 
-    time_series_cols = ['GHI', 'DNI', 'DHI', 'Tamb']
-    
-    # Check which columns are available in the resampled data
-    available_cols = [col for col in time_series_cols if col in df_daily.columns]
-    
-    if not available_cols:
-        print("!!! ERROR: None of the required time series columns (GHI, DNI, DHI, Tamb) are available.")
-        return
-
-    # Create stacked subplots
-    fig, axes = plt.subplots(nrows=len(available_cols), ncols=1, figsize=(14, 3 * len(available_cols)), sharex=True)
-    
-    # Handle the case of a single plot (axes is not an array)
-    if len(available_cols) == 1:
+    # Requirement: Create subplots for line charts
+    fig, axes = plt.subplots(nrows=len(cols_to_plot), ncols=1, figsize=(14, 3 * len(cols_to_plot)), sharex=True)
+    if len(cols_to_plot) == 1:
         axes = [axes]
-        
-    fig.suptitle('Time Series Analysis: Daily Averages', fontsize=16)
+    
+    # Title for the overall plot
+    fig.suptitle('Time Series Analysis: Raw Data', fontsize=16)
 
-    for i, col in enumerate(available_cols):
-        df_daily[col].plot(ax=axes[i], legend=False)
-        axes[i].set_title(f'{col} Over Time', loc='left')
-        axes[i].set_ylabel(col)
-        axes[i].grid(True, linestyle='--', alpha=0.7)
+    for ax, col in zip(axes, cols_to_plot):
+        # Requirement: Plot each variable vs. Timestamp
+        # Plotting the original, high-resolution data for daily trends/peaks
+        df_ts[col].plot(ax=ax, linewidth=0.5) 
         
-    plt.xlabel('Date')
-    plt.tight_layout(rect=[0, 0, 1, 0.98]) 
+        # Title on each subplot
+        ax.set_title(f'{col} Over Time (Raw Data)', loc='left')
+        # Y-axis label
+        ax.set_ylabel(col)
+        # Requirement: Show grid to help spot anomalies
+        ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # X-axis label (date)
+    plt.xlabel('Date and Time') # Changed to reflect the high-resolution data
+    plt.tight_layout(rect=[0,0,1,0.98])
     plt.show()
 
-# --- 3. Cleaning Impact Analysis (REQUIRED) ---
-# --- 3. Cleaning Impact Analysis (REQUIRED) ---
+
+
+
+# ---  Prepare Impact Data ---
+def prepare_impact_data(df_raw, df_clean):
+    print("\n--- 🧑‍💻 Preparing DataFrames for Cleaning Impact Analysis ---")
+
+    cols_to_keep = ['Timestamp', 'ModA', 'ModB']
+    
+    # --- Raw Data ---
+    df_raw_flagged = df_raw.copy()
+    if not all(col in df_raw_flagged.columns for col in cols_to_keep):
+        print("!!! ERROR: Raw data is missing 'Timestamp', 'ModA', or 'ModB'. Cannot proceed.")
+        return None
+    
+    print(f"   -> Raw data shape: {df_raw_flagged.shape}. Adding 'Cleaning = 0' flag.")
+    df_raw_flagged['Cleaning'] = 0
+    raw_impact_data = df_raw_flagged[cols_to_keep + ['Cleaning']]
+
+    # --- Cleaned Data ---
+    df_clean_flagged = df_clean.copy()
+    if not all(col in df_clean_flagged.columns for col in cols_to_keep):
+        print("!!! ERROR: Cleaned data is missing 'Timestamp', 'ModA', or 'ModB'. Cannot proceed.")
+        return None
+    
+    print(f"   -> Cleaned data shape: {df_clean_flagged.shape}. Adding 'Cleaning = 1' flag.")
+    df_clean_flagged['Cleaning'] = 1
+    clean_impact_data = df_clean_flagged[cols_to_keep + ['Cleaning']]
+    
+    # --- Combine Raw & Cleaned ---
+    df_combined = pd.concat([raw_impact_data, clean_impact_data], ignore_index=True)
+    print(f"✅ Combined DataFrame created with {len(df_combined)} rows for comparison.")
+    
+    return df_combined
+
+# ---  Cleaning Impact Analysis with Box Plot ---
+
 def plot_cleaning_impact(df):
     """
-    Plots average ModA & ModB grouped by Cleaning (0 = raw, 1 = cleaned).
+    Plots the distribution of ModA & ModB grouped by Cleaning (0 = raw, 1 = cleaned) using box plots.
     """
     print("\n--- Plotting Cleaning Impact Analysis ---")
 
@@ -97,39 +138,32 @@ def plot_cleaning_impact(df):
         print("!!! ERROR: Missing one or more required columns: 'ModA', 'ModB', 'Cleaning'.")
         return
 
-    # Group by 'Cleaning' and calculate the mean. 
-    # as_index=False makes 'Cleaning' a regular column, which is easier for seaborn.
+    # Print average values for reference
     grouped_avg = df.groupby('Cleaning', as_index=False)[['ModA', 'ModB']].mean()
     print("\nAverage Values by Cleaning Flag:\n", grouped_avg.set_index('Cleaning'))
-    # --------------------------------------
 
-    # Bar Plot for grouped averages
+    # Box Plots
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    fig.suptitle('Average ModA & ModB by Cleaning Flag', fontsize=16)
+    fig.suptitle('Distribution of ModA & ModB by Cleaning Flag', fontsize=16)
 
-    # Define custom labels that will be used for both plots
-    custom_labels = ['Not Cleaned (0)', 'Cleaned (1)']
-
-    # Use 'data', 'x', and 'y' parameters for simplicity.
-    sns.barplot(x='Cleaning', y='ModA', data=grouped_avg, ax=axes[0], color='skyblue')
-    axes[0].set_title('Average ModA')
-    axes[0].set_ylabel('Average ModA Value')
-    
+    # ModA Box Plot
+    sns.boxplot(x='Cleaning', y='ModA', data=df, hue='Cleaning', palette=['skyblue', 'orange'], legend=False, ax=axes[0])
+    axes[0].set_title('ModA Distribution')
     axes[0].set_xticks([0, 1])
-    axes[0].set_xticklabels(custom_labels)
-    axes[0].set_xlabel('Cleaning Flag') # Clearer X label
+    axes[0].set_xticklabels(['Not Cleaned', 'Cleaned'])
+    axes[0].set_ylabel('ModA Value')
+    axes[0].set_xlabel('Cleaning Flag')
 
-    sns.barplot(x='Cleaning', y='ModB', data=grouped_avg, ax=axes[1], color='orange')
-    axes[1].set_title('Average ModB')
-    axes[1].set_ylabel('Average ModB Value')
-    
+    # ModB Box Plot
+    sns.boxplot(x='Cleaning', y='ModB', data=df, hue='Cleaning', palette=['skyblue', 'orange'], legend=False, ax=axes[1])
+    axes[1].set_title('ModB Distribution')
     axes[1].set_xticks([0, 1])
-    axes[1].set_xticklabels(custom_labels)
-    axes[1].set_xlabel('Cleaning Flag') # Clearer X label
+    axes[1].set_xticklabels(['Not Cleaned', 'Cleaned'])
+    axes[1].set_ylabel('ModB Value')
+    axes[1].set_xlabel('Cleaning Flag')
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
-
 
 # --- 4. Correlation & Relationship Analysis (REQUIRED) ---
 def plot_correlation_heatmap(df):

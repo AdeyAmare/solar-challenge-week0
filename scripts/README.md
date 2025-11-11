@@ -1,6 +1,6 @@
 # Scripts Overview
 
-The scripts folder contains reusable Python functions for data preparation and analysis. These scripts are designed to be modular and flexible, enabling users to:
+The scripts folder contains reusable Python functions for data preparation/cleaning and analysis. These scripts are designed to be modular and flexible, enabling users to:
 
 1. Load raw and cleaned datasets.
 2. Generate summary statistics and missing value reports.
