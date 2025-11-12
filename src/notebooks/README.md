@@ -1,5 +1,5 @@
 # Data Profiling, Cleaning & Analysis
 
-This repository contains notebooks for analyzing solar datasets for different countries. The notebooks guide users through data inspection, cleaning, outlier handling, and visual analysis step by step, while using scripts to provide modular functions for loading data, computing summary statistics, handling outliers, cleaning datasets, and generating visualizations.
+This repository contains notebooks for analyzing solar datasets from different countries. The notebooks guide users through **data inspection, cleaning, outlier detection, and visual analysis**, while leveraging modular scripts for tasks such as data loading, summary statistics, outlier handling, dataset cleaning, and visualization generation.
 
-The design emphasizes reusability and clarity: notebooks focus on observations and insights, while the scripts handle the computational and plotting tasks. This setup allows easy application to multiple countries or datasets without rewriting code.
+The project emphasizes **reusability and clarity**: notebooks focus on insights and observations, while the scripts handle computation and plotting. This structure allows the workflow to be easily applied to multiple countries or datasets without rewriting code.
