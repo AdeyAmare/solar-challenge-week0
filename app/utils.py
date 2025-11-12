@@ -28,6 +28,7 @@ def plot_boxplot(df_list, selected_names, metric):
         return
 
     fig, ax = plt.subplots(figsize=(6,4))
+
     sns.boxplot(x='Dataset', y=metric, data=combined_df, ax=ax)
     ax.set_title(f"{metric} Distribution")
     st.pyplot(fig)

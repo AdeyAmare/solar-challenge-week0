@@ -10,6 +10,7 @@ solar-challenge-week0/
 │   ├── main.py
 │   ├── utils.py
 │   └── README.md
+├── dashboard_screenshots/                     # Interactive Dashboard Screenshots
 ├── data/                     # Cleaned CSV datasets (ignored by Git)
 ├── src/
 │   ├── notebooks/            # Jupyter notebooks for EDA and comparisons
