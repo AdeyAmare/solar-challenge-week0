@@ -27,7 +27,7 @@ def plot_boxplot(df_list, selected_names, metric):
         st.warning("No data available for the selected datasets/metric")
         return
 
-    fig, ax = plt.subplots(figsize=(3, 3), dpi=150)  # smaller but higher-res
+    fig, ax = plt.subplots(figsize=(6,4))
 
     sns.boxplot(x='Dataset', y=metric, data=combined_df, ax=ax)
     ax.set_title(f"{metric} Distribution")
