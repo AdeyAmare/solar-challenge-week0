@@ -69,14 +69,6 @@ class DatasetHandler(FileLoadingHandler):
         # Flag rows where any Z-score > 3
         df['Outliers_Flag'] = zscores.abs().gt(3).any(axis=1)
         
-        # Display specific outlier counts for ModA and ModB
-        if 'ModA' in zscores.columns:
-            mod_a_outlier_count = zscores['ModA'].abs().gt(3).sum()
-            print(f"\n📈 ModA Specific Outliers (|Z| > 3): {mod_a_outlier_count}")
-        
-        if 'ModB' in zscores.columns:
-            mod_b_outlier_count = zscores['ModB'].abs().gt(3).sum()
-            print(f"📉 ModB Specific Outliers (|Z| > 3): {mod_b_outlier_count}")
             
         print(f"\n✅ Total rows flagged (at least one column |Z| > 3): {df['Outliers_Flag'].sum()}")
         self.df = df
