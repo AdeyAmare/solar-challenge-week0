@@ -4,21 +4,32 @@ This project explores solar energy potential across Benin, Sierra Leone, and Tog
 # Project Structure
 ```
 solar-challenge-week0/
-├── .github/                # GitHub Actions workflows
-├── data/                   # Cleaned CSV datasets (ignored by Git)
-├── notebooks/              # Jupyter notebooks for EDA and comparisons
-│   ├── benin_eda.ipynb
-│   ├── sierra_leone_eda.ipynb
-│   ├── togo_eda.ipynb
-│   └── compare_countries.ipynb
-├── scripts/                # Modular Python scripts
+├── .github/                  # GitHub Actions workflows
+├── app/                      # Streamlit app for interactive dashboard
+│   ├── __init__.py
+│   ├── main.py
+│   ├── utils.py
+│   └── README.md
+├── data/                     # Cleaned CSV datasets (ignored by Git)
+├── src/
+│   ├── notebooks/            # Jupyter notebooks for EDA and comparisons
+│   │   ├── __init__.py
+│   │   ├── benin_eda.ipynb
+│   │   ├── sierra_leone_eda.ipynb
+│   │   ├── togo_eda.ipynb
+│   │   ├── compare_countries.ipynb
+│   │   └── README.md
+├── scripts/                  # Modular Python scripts
+│   ├── __init__.py
 │   ├── file_loading_handler.py   # Base class for data loading
 │   ├── data_prep_clean.py        # Dataset cleaning and profiling
 │   ├── eda_plots.py              # EDA visualizations
 │   └── compare_countries.py      # Cross-country comparison
+│   └── README.md
 ├── .gitignore
 ├── requirements.txt
 └── README.md
+
 ```
 
 
@@ -36,8 +47,11 @@ The `EDAHandler` class generates visualizations to explore solar patterns, inclu
 
 The `ComparisonHandler` class combines cleaned datasets across countries, generating boxplots and average GHI bar charts, and performs ANOVA and Kruskal–Wallis tests to assess differences in solar irradiance.
 
+5. Interactive Dashboard
 
-4. Modular & Reproducible Design
+The Streamlit dashboard allows users to upload CSV files, select countries and metrics, visualize interactive boxplots, and view top regions tables. It provides a dynamic interface for exploring solar data insights and is ready for deployment on Streamlit Community Cloud.
+
+6. Modular & Reproducible Design
 
 Core functionality is implemented in Python classes under scripts/ to maintain reusable, clean code. Notebooks focus on analysis and storytelling, keeping complex logic separate.
 
@@ -87,7 +101,12 @@ Each notebook demonstrates the full data workflow: loading raw datasets with Dat
 
 ### Use ```compare_countries.ipynb``` to analyze solar potential across Benin, Sierra Leone, and Togo.
 
-The cross-country comparison notebook loads cleaned CSV files using ComparisonHandler, visualizes distributions of GHI, DNI, and DHI with boxplots, computes summary statistics and averages, performs ANOVA and Kruskal–Wallis tests to assess statistical differences between countries, and generates bar charts ranking countries by average GHI to highlight regions with the highest solar potential.
+The cross-country comparison notebook loads cleaned CSVs, visualizes GHI, DNI, and DHI distributions with boxplots, computes summary statistics, performs ANOVA/Kruskal–Wallis tests, and ranks countries by average GHI to highlight top solar regions.
+
+
+### Use `app/main.py` to explore solar datasets interactively.
+
+The Streamlit dashboard lets users upload CSVs, select countries and metrics, view interactive boxplots, and see a top regions table ranking solar potential in real time.
 
 ### Note
 
@@ -102,3 +121,5 @@ All scripts can be imported in notebooks for step-by-step execution or experimen
 ```eda-benin, eda-sierraleone, eda-togo``` — Individual country EDA.
 
 ```compare-countries``` — Cross-country analysis.
+
+```dashboard-dev``` —    Interactive Dashboard
