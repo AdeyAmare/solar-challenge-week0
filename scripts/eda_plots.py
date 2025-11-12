@@ -56,84 +56,51 @@ class EDAHandler(FileLoadingHandler):
         plt.tight_layout(rect=[0,0,1,0.98])
         plt.show()
 
-    def prepare_impact_data(self, df_clean):
+    def plot_cleaning_impact(self):
         """
-        Prepare a combined DataFrame for cleaning impact analysis by flagging raw and cleaned data.
-
-        Parameters:
-        -----------
-        df_clean : pd.DataFrame
-            The cleaned DataFrame to compare against raw data.
-
-        Returns:
-        --------
-        pd.DataFrame or None
-            Combined DataFrame with 'Cleaning' flag (0 = raw, 1 = cleaned).
+        Plot the impact of the existing solar panel cleaning flag using point plots.
         """
-        df_raw = self.df
-        print("\n--- 🧑‍💻 Preparing DataFrames for Cleaning Impact Analysis ---")
+        df = self.df
+        print("\n--- Plotting Cleaning Flag Impact (Point Plot) ---")
 
-        cols_to_keep = ['Timestamp', 'ModA', 'ModB']
-
-        # Flag raw data
-        df_raw_flagged = df_raw.copy()
-        if not all(col in df_raw_flagged.columns for col in cols_to_keep):
-            print("!!! ERROR: Raw data is missing 'Timestamp', 'ModA', or 'ModB'. Cannot proceed.")
-            return None
-        df_raw_flagged['Cleaning'] = 0
-        raw_impact_data = df_raw_flagged[cols_to_keep + ['Cleaning']]
-
-        # Flag cleaned data
-        df_clean_flagged = df_clean.copy()
-        if not all(col in df_clean_flagged.columns for col in cols_to_keep):
-            print("!!! ERROR: Cleaned data is missing 'Timestamp', 'ModA', or 'ModB'. Cannot proceed.")
-            return None
-        df_clean_flagged['Cleaning'] = 1
-        clean_impact_data = df_clean_flagged[cols_to_keep + ['Cleaning']]
-
-        df_combined = pd.concat([raw_impact_data, clean_impact_data], ignore_index=True)
-        print(f"✅ Combined DataFrame created with {len(df_combined)} rows for comparison.")
-
-        return df_combined
-
-    def plot_cleaning_impact(self, df):
-        """
-        Plot boxplots for ModA and ModB to visualize the effect of cleaning.
-
-        Parameters:
-        -----------
-        df : pd.DataFrame
-            Combined DataFrame with 'Cleaning' flag.
-        """
-        print("\n--- Plotting Cleaning Impact Analysis ---")
         required_cols = ['ModA', 'ModB', 'Cleaning']
         if not all(col in df.columns for col in required_cols):
             print("!!! ERROR: Missing one or more required columns: 'ModA', 'ModB', 'Cleaning'.")
             return
 
-        # Show averages for each cleaning flag
-        grouped_avg = df.groupby('Cleaning', as_index=False)[['ModA', 'ModB']].mean()
-        print("\nAverage Values by Cleaning Flag:\n", grouped_avg.set_index('Cleaning'))
-
         fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-        fig.suptitle('Distribution of ModA & ModB by Cleaning Flag', fontsize=16)
+        fig.suptitle('Impact of Solar Panel Cleaning (Existing Flag)', fontsize=16)
 
-        sns.boxplot(x='Cleaning', y='ModA', data=df, hue='Cleaning', palette=['skyblue', 'orange'], legend=False, ax=axes[0])
-        axes[0].set_title('ModA Distribution')
+        # Common parameters for tick labels
+        xtick_labels = ['Not Cleaned', 'Cleaned']
+
+        # --- Point plot for ModA ---
+        sns.pointplot(x='Cleaning', y='ModA', data=df, 
+                    hue='Cleaning', legend=False,
+                    errorbar='sd', markers='o', linestyles='-', 
+                    palette=['skyblue', 'orange'], ax=axes[0])
+        
         axes[0].set_xticks([0, 1])
-        axes[0].set_xticklabels(['Not Cleaned', 'Cleaned'])
+        axes[0].set_xticklabels(xtick_labels)
+        axes[0].set_title('ModA')
         axes[0].set_ylabel('ModA Value')
         axes[0].set_xlabel('Cleaning Flag')
 
-        sns.boxplot(x='Cleaning', y='ModB', data=df, hue='Cleaning', palette=['skyblue', 'orange'], legend=False, ax=axes[1])
-        axes[1].set_title('ModB Distribution')
+        # --- Point plot for ModB ---
+        sns.pointplot(x='Cleaning', y='ModB', data=df, 
+                    hue='Cleaning', legend=False,
+                    errorbar='sd', markers='o', linestyles='-', 
+                    palette=['skyblue', 'orange'], ax=axes[1])
+        
         axes[1].set_xticks([0, 1])
-        axes[1].set_xticklabels(['Not Cleaned', 'Cleaned'])
+        axes[1].set_xticklabels(xtick_labels)
+        axes[1].set_title('ModB')
         axes[1].set_ylabel('ModB Value')
         axes[1].set_xlabel('Cleaning Flag')
 
         plt.tight_layout(rect=[0, 0, 1, 0.95])
         plt.show()
+
 
     def plot_correlation_heatmap(self):
         """
