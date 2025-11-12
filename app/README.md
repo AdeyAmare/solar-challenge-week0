@@ -30,3 +30,5 @@ Dynamic Updates: Visualizations and tables refresh automatically based on upload
 
 Deployed on Streamlit Community Cloud for public access.
 
+https://solar-challenge-week0-ad78tttvmexacpilgwis9r.streamlit.app/
+
